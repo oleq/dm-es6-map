@@ -25,6 +25,20 @@ export default class extends View {
 			zoom: 5
 		} );
 
+		google.maps.event.addListener( this.ui.map, 'click', function( event ) {
+			var placeDef = {
+				name: 'New place',
+				desc: '',
+				rating: 5,
+				lat: event.latLng.lat(),
+				lng: event.latLng.lng()
+			};
+
+			this.model.once( 'place:add', this.showInfoForm, this );
+
+			this.fire( 'place:create', placeDef );
+		}.bind( this ) );
+
 		this.ui.infoForm = elementFromString( `<form>
 			<dl class="mapForm">
 				<dt><label for="name">Name</label></dt>
@@ -77,7 +91,7 @@ export default class extends View {
 
 		this.ui.markers[ placeId ] = marker;
 
-		google.maps.event.addListener( marker, 'click', this.showInfoForm.bind( this, marker, placeId, placeDef ) );
+		google.maps.event.addListener( marker, 'click', this.showInfoForm.bind( this, placeId ) );
 	}
 
 	removeMarker( placeId ) {
@@ -85,13 +99,17 @@ export default class extends View {
 		delete this.ui.markers[ placeId ];
 	}
 
-	showInfoForm( marker, placeId, placeDef ) {
+	showInfoForm( placeId ) {
+		var placeDef = this.model.get( placeId );
+
 		this.ui.infoFormFields.name.value = placeDef.name;
 		this.ui.infoFormFields.desc.value = placeDef.desc;
 		this.ui.infoFormFields.rating.value = placeDef.rating;
 		this.ui.infoFormFields.id.value = placeId;
 
-   		this.ui.infoWindow.open( this.ui.map, marker );
+   		this.ui.infoWindow.open( this.ui.map, this.getMarkerByPlaceId( placeId ) );
+
+   		this.ui.infoFormFields.name.focus();
 	}
 
 	getInfoFormFieldValue( name ) {
@@ -117,12 +135,11 @@ export default class extends View {
 	}
 
 	panToMarker( placeId ) {
-		var place = this.model.get( placeId ),
-			marker = this.getMarkerByPlaceId( placeId );
+		var marker = this.getMarkerByPlaceId( placeId );
 
 		this.ui.map.panTo( marker.position );
 		this.ui.map.setZoom( 15 );
-		this.showInfoForm( marker, placeId, place );
+		this.showInfoForm( placeId );
 	}
 
 	panToAllMarkers() {

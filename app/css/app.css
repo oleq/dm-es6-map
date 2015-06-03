@@ -100,7 +100,7 @@ h1 button {
 	cursor: pointer;
 }
 
-#list h2 {
+#list .place-name {
 	font-size: 1.2rem;
 	text-overflow: ellipsis;
 	white-space: nowrap;

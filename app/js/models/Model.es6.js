@@ -22,7 +22,8 @@ export default class extends Emitter {
 
 				if ( oldValue !== value ) {
 					this._modelKeys[ name ] = value;
-					this.fire( 'change:' + name, value, oldValue )
+					this.fire( 'change', name, value, oldValue );
+					this.fire( 'change:' + name, value, oldValue );
 				}
 			}
 		} );

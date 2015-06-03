@@ -26,6 +26,7 @@ list.on( 'show:all', map.panToAllMarkers, map );
 
 map.on( 'place:save', placeCollection.update, placeCollection );
 map.on( 'place:remove', placeCollection.remove, placeCollection );
+map.on( 'place:create', placeCollection.add, placeCollection );
 
 placeCollection.add( [
 	{

@@ -75,6 +75,7 @@
 
 	map.on("place:save", placeCollection.update, placeCollection);
 	map.on("place:remove", placeCollection.remove, placeCollection);
+	map.on("place:create", placeCollection.add, placeCollection);
 
 	placeCollection.add([{
 		name: "Wrocław",
@@ -288,7 +289,7 @@
 			set: {
 				value: function set(key, value) {
 					this.storage.setItem(key, JSON.stringify(value));
-					console.log("[Storage: set]", key);
+					console.log("[Storage: set key]", key);
 				}
 			},
 			get: {
@@ -299,7 +300,7 @@
 						value = JSON.parse(value);
 					}
 
-					console.log("[Storage: get]", key);
+					console.log("[Storage: get key]", key);
 
 					return value;
 				}
@@ -427,6 +428,7 @@
 
 							if (oldValue !== value) {
 								this._modelKeys[name] = value;
+								this.fire("change", name, value, oldValue);
 								this.fire("change:" + name, value, oldValue);
 							}
 						}
@@ -461,54 +463,56 @@
 
 		_createClass(_class, {
 			on: {
-				value: function on(eventName, callbackFn, context) {
-					callbackFn = callbackFn.bind(context || this);
+				value: function on(eventName, callback, context) {
+					callback = callback.bind(context || this);
 
 					if (this.callbacks[eventName]) {
-						this.callbacks[eventName].push(callbackFn);
+						this.callbacks[eventName].push(callback);
 					} else {
-						this.callbacks[eventName] = [callbackFn];
+						this.callbacks[eventName] = [callback];
 					}
 
-					console.log("[Emitter: new event callback]", eventName, this);
+					// console.log( '[Emitter: on]', eventName, this );
+				}
+			},
+			once: {
+				value: function once(eventName, callback, context) {
+					var oneTimeCallback = (function () {
+						for (var _len = arguments.length, eventData = Array(_len), _key = 0; _key < _len; _key++) {
+							eventData[_key] = arguments[_key];
+						}
+
+						callback.call.apply(callback, [context || this].concat(eventData));
+
+						this.callbacks[eventName].splice(this.callbacks[eventName].indexOf(callback), 1);
+					}).bind(this);
+
+					if (this.callbacks[eventName]) {
+						this.callbacks[eventName].push(oneTimeCallback);
+					} else {
+						this.callbacks[eventName] = [oneTimeCallback];
+					}
+
+					// console.log( '[Emitter: once]', eventName, this );
 				}
 			},
 			fire: {
 				value: function fire(eventName) {
+					var _this = this;
+
 					for (var _len = arguments.length, eventData = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
 						eventData[_key - 1] = arguments[_key];
 					}
 
-					var eventCallbacks = this.callbacks[eventName];
+					var callbacks = this.callbacks[eventName];
 
-					if (!eventCallbacks) {
+					if (!callbacks) {
 						return;
 					}
 
-					var _iteratorNormalCompletion = true;
-					var _didIteratorError = false;
-					var _iteratorError = undefined;
-
-					try {
-						for (var _iterator = eventCallbacks[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-							var c = _step.value;
-
-							c.call.apply(c, [this].concat(eventData));
-						}
-					} catch (err) {
-						_didIteratorError = true;
-						_iteratorError = err;
-					} finally {
-						try {
-							if (!_iteratorNormalCompletion && _iterator["return"]) {
-								_iterator["return"]();
-							}
-						} finally {
-							if (_didIteratorError) {
-								throw _iteratorError;
-							}
-						}
-					}
+					callbacks.map(function (c) {
+						return c.call.apply(c, [_this].concat(eventData));
+					});
 				}
 			}
 		});
@@ -691,6 +695,20 @@
 				zoom: 5
 			});
 
+			google.maps.event.addListener(this.ui.map, "click", (function (event) {
+				var placeDef = {
+					name: "New place",
+					desc: "",
+					rating: 5,
+					lat: event.latLng.lat(),
+					lng: event.latLng.lng()
+				};
+
+				this.model.once("place:add", this.showInfoForm, this);
+
+				this.fire("place:create", placeDef);
+			}).bind(this));
+
 			this.ui.infoForm = elementFromString("<form>\n\t\t\t<dl class=\"mapForm\">\n\t\t\t\t<dt><label for=\"name\">Name</label></dt>\n\t\t\t\t<dd><input id=\"name\" type=\"text\" placeholder=\"Name of the place\" value=\"\" /></dd>\n\n\t\t\t\t<dt><label for=\"desc\">Description</label></dt>\n\t\t\t\t<dd><textarea id=\"desc\" rows=\"5\" columns=\"120\" placeholder=\"Short description\"></textarea></dd>\n\n\t\t\t\t<dt><label for=\"rating\">Rating</label></dt>\n\t\t\t\t<dd>\n\t\t\t\t\t<select id=\"rating\" value=\"\">\n\t\t\t\t\t\t" + [1, 2, 3, 4, 5].map(function (i) {
 				return "<option value=\"" + i + "\">" + i + "</option>";
 			}).join("") + "\n\t\t\t\t\t</select> of 5\n\t\t\t\t</dd>\n\t\t\t</dl>\n\t\t\t<p>\n\t\t\t\t<button type=\"button\" id=\"save\">Save</button>\n\t\t\t\t<button type=\"button\" id=\"remove\">Remove</button>\n\t\t\t</p>\n\t\t\t<input id=\"id\" type=\"hidden\" value=\"\" />\n\t\t</form>");
@@ -732,7 +750,7 @@
 
 					this.ui.markers[placeId] = marker;
 
-					google.maps.event.addListener(marker, "click", this.showInfoForm.bind(this, marker, placeId, placeDef));
+					google.maps.event.addListener(marker, "click", this.showInfoForm.bind(this, placeId));
 				}
 			},
 			removeMarker: {
@@ -742,13 +760,17 @@
 				}
 			},
 			showInfoForm: {
-				value: function showInfoForm(marker, placeId, placeDef) {
+				value: function showInfoForm(placeId) {
+					var placeDef = this.model.get(placeId);
+
 					this.ui.infoFormFields.name.value = placeDef.name;
 					this.ui.infoFormFields.desc.value = placeDef.desc;
 					this.ui.infoFormFields.rating.value = placeDef.rating;
 					this.ui.infoFormFields.id.value = placeId;
 
-					this.ui.infoWindow.open(this.ui.map, marker);
+					this.ui.infoWindow.open(this.ui.map, this.getMarkerByPlaceId(placeId));
+
+					this.ui.infoFormFields.name.focus();
 				}
 			},
 			getInfoFormFieldValue: {
@@ -782,12 +804,11 @@
 			},
 			panToMarker: {
 				value: function panToMarker(placeId) {
-					var place = this.model.get(placeId),
-					    marker = this.getMarkerByPlaceId(placeId);
+					var marker = this.getMarkerByPlaceId(placeId);
 
 					this.ui.map.panTo(marker.position);
 					this.ui.map.setZoom(15);
-					this.showInfoForm(marker, placeId, place);
+					this.showInfoForm(placeId);
 				}
 			},
 			panToAllMarkers: {

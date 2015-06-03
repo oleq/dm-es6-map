@@ -7,7 +7,7 @@ export default class {
 
 	set( key, value ) {
 		this.storage.setItem( key, JSON.stringify( value ) );
-		console.log( '[Storage: set]', key );
+		console.log( '[Storage: set key]', key );
 	}
 
 	get( key ) {
@@ -17,7 +17,7 @@ export default class {
 			value = JSON.parse( value );
 		}
 
-		console.log( '[Storage: get]', key );
+		console.log( '[Storage: get key]', key );
 
 		return value;
 	}
