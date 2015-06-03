@@ -73,7 +73,6 @@ export default class extends View {
 		this.ui.infoFormControls.remove.addEventListener( 'click', function() {
 			var id = this.getInfoFormFieldValue( 'id' );
 
-			this.removeMarker( id );
 			this.ui.infoWindow.close();
 			this.fire( 'place:remove', id );
 		}.bind( this ) );
