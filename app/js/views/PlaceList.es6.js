@@ -16,6 +16,10 @@ export default class extends View {
 		this.ui.showAll.addEventListener( 'click', function() {
 			this.fire( 'show:all' );
 		}.bind( this ) );
+
+		this.ui.removeAll.addEventListener( 'click', function() {
+			this.fire( 'remove:all' );
+		}.bind( this ) );
 	}
 
 	add( placeId, placeDef ) {

@@ -9,7 +9,9 @@ var placeCollection = new PlaceCollection();
 var list = new PlaceList( {
 	ui: {
 		list: 'list',
-		showAll: 'showAll'
+		showAll: 'showAll',
+		removeAll: 'removeAll',
+		addSample: 'addSample'
 	},
 	model: placeCollection
 } );
@@ -23,33 +25,19 @@ var map = new Map( {
 
 list.on( 'show:place', map.panToMarker, map );
 list.on( 'show:all', map.panToAllMarkers, map );
+list.on( 'remove:all', placeCollection.removeAll, placeCollection );
+list.on( 'add:sample', placeCollection.addSample, placeCollection );
+list.on( 'add:sample', map.panToAllMarkers, map );
 
 map.on( 'place:save', placeCollection.update, placeCollection );
+map.on( 'place:move', placeCollection.update, placeCollection );
 map.on( 'place:remove', placeCollection.remove, placeCollection );
 map.on( 'place:create', placeCollection.add, placeCollection );
 
-placeCollection.add( [
-	{
-		name: 'Wrocław',
-		desc: 'Wrocław is the largest city in western Poland.',
-		rating: 3,
-		lat: 51.10789,
-		lng: 17.03854
-	},
-	{
-		name: 'Warszawa',
-		desc: 'Warszawa is the capital and largest city of Poland.',
-		rating: 2,
-		lat: 52.22968,
-		lng: 21.01223
-	},
-	{
-		name: 'Gdańsk',
-		desc: 'Ships and stuff.',
-		rating: 4,
-		lat: 54.35203,
-		lng: 18.64664
-	}
-] );
+placeCollection.loadStorage();
+
+if ( !placeCollection.length ) {
+	placeCollection.addSample();
+}
 
 map.panToAllMarkers();

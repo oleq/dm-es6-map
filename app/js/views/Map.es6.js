@@ -16,6 +16,7 @@ export default class extends View {
 		this.ui.infoFormControls = {};
 
 		this.model.on( 'place:add', this.addMarker, this );
+		this.model.on( 'place:remove', this.removeMarker, this );
 
 		this.ui.map = new google.maps.Map( this.ui.mapContainer, {
 			center: {
@@ -72,9 +73,9 @@ export default class extends View {
 		this.ui.infoFormControls.remove.addEventListener( 'click', function() {
 			var id = this.getInfoFormFieldValue( 'id' );
 
-			this.fire( 'place:remove', id );
-			this.ui.infoWindow.close();
 			this.removeMarker( id );
+			this.ui.infoWindow.close();
+			this.fire( 'place:remove', id );
 		}.bind( this ) );
 
 		this.ui.infoWindow = new google.maps.InfoWindow( {
@@ -86,8 +87,19 @@ export default class extends View {
 		var marker = new google.maps.Marker({
 			position: placeDef.latLng,
 			map: this.ui.map,
-			title: placeDef.name
+			title: placeDef.name,
+			draggable: true
 		} );
+
+		google.maps.event.addListener( marker, 'dragend', function( event ) {
+			this.fire( 'place:move', {
+				id: placeId,
+				lat: event.latLng.lat(),
+				lng: event.latLng.lng()
+			} );
+
+			this.showInfoForm( placeId );
+		}.bind( this ) );
 
 		this.ui.markers[ placeId ] = marker;
 
@@ -95,7 +107,7 @@ export default class extends View {
 	}
 
 	removeMarker( placeId ) {
-		this.ui.markers[ placeId ].setMap( null );
+		this.getMarkerByPlaceId( placeId ).setMap( null );
 		delete this.ui.markers[ placeId ];
 	}
 
@@ -137,9 +149,13 @@ export default class extends View {
 	panToMarker( placeId ) {
 		var marker = this.getMarkerByPlaceId( placeId );
 
-		this.ui.map.panTo( marker.position );
-		this.ui.map.setZoom( 15 );
+		this.panToPosition( marker.position, 15 );
 		this.showInfoForm( placeId );
+	}
+
+	panToPosition( position, zoom ) {
+		this.ui.map.panTo( position );
+		this.ui.map.setZoom( zoom );
 	}
 
 	panToAllMarkers() {

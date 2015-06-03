@@ -59,7 +59,9 @@
 	var list = new PlaceList({
 		ui: {
 			list: "list",
-			showAll: "showAll"
+			showAll: "showAll",
+			removeAll: "removeAll",
+			addSample: "addSample"
 		},
 		model: placeCollection
 	});
@@ -72,30 +74,20 @@
 
 	list.on("show:place", map.panToMarker, map);
 	list.on("show:all", map.panToAllMarkers, map);
+	list.on("remove:all", placeCollection.removeAll, placeCollection);
+	list.on("add:sample", placeCollection.addSample, placeCollection);
+	list.on("add:sample", map.panToAllMarkers, map);
 
 	map.on("place:save", placeCollection.update, placeCollection);
+	map.on("place:move", placeCollection.update, placeCollection);
 	map.on("place:remove", placeCollection.remove, placeCollection);
 	map.on("place:create", placeCollection.add, placeCollection);
 
-	placeCollection.add([{
-		name: "Wrocław",
-		desc: "Wrocław is the largest city in western Poland.",
-		rating: 3,
-		lat: 51.10789,
-		lng: 17.03854
-	}, {
-		name: "Warszawa",
-		desc: "Warszawa is the capital and largest city of Poland.",
-		rating: 2,
-		lat: 52.22968,
-		lng: 21.01223
-	}, {
-		name: "Gdańsk",
-		desc: "Ships and stuff.",
-		rating: 4,
-		lat: 54.35203,
-		lng: 18.64664
-	}]);
+	placeCollection.loadStorage();
+
+	if (!placeCollection.length) {
+		placeCollection.addSample();
+	}
 
 	map.panToAllMarkers();
 
@@ -185,6 +177,29 @@
 					console.log("[PlaceCollection: place added]", placeDef);
 				}
 			},
+			addSample: {
+				value: function addSample() {
+					this.add([{
+						name: "Wrocław",
+						desc: "Lots of dwarves, lots of bridges.",
+						rating: 5,
+						lat: 51.10789,
+						lng: 17.03854
+					}, {
+						name: "Warszawa",
+						desc: "The capital and largest city of Poland.",
+						rating: 2,
+						lat: 52.22968,
+						lng: 21.01223
+					}, {
+						name: "Gdańsk",
+						desc: "Ships and stuff.",
+						rating: 4,
+						lat: 54.35203,
+						lng: 18.64664
+					}]);
+				}
+			},
 			remove: {
 				value: function remove(placeId) {
 					this.places["delete"](placeId);
@@ -192,6 +207,15 @@
 
 					this.fire("place:remove", placeId);
 					console.log("[PlaceCollection: place removed]", placeId);
+				}
+			},
+			removeAll: {
+				value: function removeAll() {
+					var _this = this;
+
+					this.forEach(function (v, k) {
+						return _this.remove(k);
+					});
 				}
 			},
 			get: {
@@ -214,6 +238,15 @@
 			forEach: {
 				value: function forEach(callback) {
 					this.places.forEach(callback);
+				}
+			},
+			loadStorage: {
+				value: function loadStorage() {
+					var places = this.storage.get("places");
+
+					if (places) {
+						this.add(places);
+					}
 				}
 			},
 			syncStorage: {
@@ -304,11 +337,6 @@
 
 					return value;
 				}
-
-				// remove( key ) {
-				// 	this.storage.removeItem( key );
-				// }
-
 			}
 		});
 
@@ -560,6 +588,10 @@
 			this.ui.showAll.addEventListener("click", (function () {
 				this.fire("show:all");
 			}).bind(this));
+
+			this.ui.removeAll.addEventListener("click", (function () {
+				this.fire("remove:all");
+			}).bind(this));
 		};
 
 		_inherits(_class, _View);
@@ -686,6 +718,7 @@
 			this.ui.infoFormControls = {};
 
 			this.model.on("place:add", this.addMarker, this);
+			this.model.on("place:remove", this.removeMarker, this);
 
 			this.ui.map = new google.maps.Map(this.ui.mapContainer, {
 				center: {
@@ -728,9 +761,9 @@
 			this.ui.infoFormControls.remove.addEventListener("click", (function () {
 				var id = this.getInfoFormFieldValue("id");
 
-				this.fire("place:remove", id);
-				this.ui.infoWindow.close();
 				this.removeMarker(id);
+				this.ui.infoWindow.close();
+				this.fire("place:remove", id);
 			}).bind(this));
 
 			this.ui.infoWindow = new google.maps.InfoWindow({
@@ -745,8 +778,19 @@
 					var marker = new google.maps.Marker({
 						position: placeDef.latLng,
 						map: this.ui.map,
-						title: placeDef.name
+						title: placeDef.name,
+						draggable: true
 					});
+
+					google.maps.event.addListener(marker, "dragend", (function (event) {
+						this.fire("place:move", {
+							id: placeId,
+							lat: event.latLng.lat(),
+							lng: event.latLng.lng()
+						});
+
+						this.showInfoForm(placeId);
+					}).bind(this));
 
 					this.ui.markers[placeId] = marker;
 
@@ -755,7 +799,7 @@
 			},
 			removeMarker: {
 				value: function removeMarker(placeId) {
-					this.ui.markers[placeId].setMap(null);
+					this.getMarkerByPlaceId(placeId).setMap(null);
 					delete this.ui.markers[placeId];
 				}
 			},
@@ -806,9 +850,14 @@
 				value: function panToMarker(placeId) {
 					var marker = this.getMarkerByPlaceId(placeId);
 
-					this.ui.map.panTo(marker.position);
-					this.ui.map.setZoom(15);
+					this.panToPosition(marker.position, 15);
 					this.showInfoForm(placeId);
+				}
+			},
+			panToPosition: {
+				value: function panToPosition(position, zoom) {
+					this.ui.map.panTo(position);
+					this.ui.map.setZoom(zoom);
 				}
 			},
 			panToAllMarkers: {

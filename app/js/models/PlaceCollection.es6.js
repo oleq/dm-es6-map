@@ -37,12 +37,42 @@ export default class extends Emitter {
 		console.log( '[PlaceCollection: place added]', placeDef );
 	}
 
+	addSample() {
+		this.add( [
+			{
+				name: 'Wrocław',
+				desc: 'Lots of dwarves, lots of bridges.',
+				rating: 5,
+				lat: 51.10789,
+				lng: 17.03854
+			},
+			{
+				name: 'Warszawa',
+				desc: 'The capital and largest city of Poland.',
+				rating: 2,
+				lat: 52.22968,
+				lng: 21.01223
+			},
+			{
+				name: 'Gdańsk',
+				desc: 'Ships and stuff.',
+				rating: 4,
+				lat: 54.35203,
+				lng: 18.64664
+			}
+		] );
+	}
+
 	remove( placeId ) {
 		this.places.delete( placeId );
 		this.syncStorage();
 
 		this.fire( 'place:remove', placeId );
 		console.log( '[PlaceCollection: place removed]', placeId );
+	}
+
+	removeAll() {
+		this.forEach( ( v, k ) => this.remove( k ) );
 	}
 
 	get( placeId ) {
@@ -61,6 +91,14 @@ export default class extends Emitter {
 
 	forEach( callback ) {
 		this.places.forEach( callback );
+	}
+
+	loadStorage() {
+		var places = this.storage.get( 'places' );
+
+		if ( places ) {
+			this.add( places );
+		}
 	}
 
 	syncStorage() {

@@ -6,40 +6,54 @@ html {
 	color: #575757;
 }
 
-header, #controls, #map {
+header, #list-wrapper, #map {
 	position: absolute;
 }
 
-#controls, #map {
-	top: 0;
+#list-wrapper, #map {
 	bottom: 0;
 }
 
-#controls {
+#list-wrapper {
+	z-index: 10;
+	box-shadow: 0 0 10px rgba( 0,0,0,.3 );
+	top: 0px;
+	padding-top: 60px;
 	left: 0;
 	width: 30%;
-	box-shadow: 0 0 10px rgba( 0,0,0,.3 );
-	z-index: 10;
 	background: #fafafa;
-	padding-top: 60px;
 }
 
-h1 {
+header {
+	top: 0;
+	width: 30%;
+	background: #E74C3C;
+	height: 60px;
+	z-index: 20;
+	display: table;
+}
+
+header h1 {
+	display: table-cell;
 	font-size: 1.2rem;
 	line-height: 60px;
-	height: 60px;
 	padding: 0 1rem;
-	margin: -60px 0 0 0;
-	background: #E74C3C;
+	margin: 0;
+	display: inline-block;
 	color: #fff;
 }
 
-h1 button {
+header .actions {
+	display: table-cell;
+	text-align: right;
+	padding-right: 1rem;
+}
+
+header button {
 	background: #fff;
 	border: 0;
 	color: #E74C3C;
-	float: right;
-	margin-top: 1rem;
+	display: inline-block;
 	font-size: .8rem;
 	cursor: pointer;
 	padding: .4rem .5rem;

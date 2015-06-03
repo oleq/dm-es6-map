@@ -21,8 +21,4 @@ export default class {
 
 		return value;
 	}
-
-	// remove( key ) {
-	// 	this.storage.removeItem( key );
-	// }
 }
