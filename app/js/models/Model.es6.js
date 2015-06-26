@@ -6,24 +6,22 @@ export default class extends Emitter {
 	constructor() {
 		super();
 
-		Object.defineProperty( this, '_modelKeys', {
-			value: {}
-		} );
+		this.modelKeys = new Map();
 	}
 
 	set( name, value ) {
 		Object.defineProperty( this, name, {
 			get() {
-				return this._modelKeys[ name ];
+				return this.modelKeys.get( name );
 			},
 
 			set( value ) {
-				var oldValue = this._modelKeys[ name ];
+				var oldValue = this.modelKeys.get( name );
 
 				if ( oldValue !== value ) {
-					this._modelKeys[ name ] = value;
-					this.fire( 'change', name, value, oldValue );
-					this.fire( 'change:' + name, value, oldValue );
+					this.modelKeys.set( name, value );
+					this.fire( 'change', name, `was: ${oldValue}, is: ${value}` );
+					this.fire( 'change:' + name, `was: ${oldValue}, is: ${value}` );
 				}
 			}
 		} );
