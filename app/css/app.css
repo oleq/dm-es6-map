@@ -22,6 +22,7 @@ header, #list-wrapper, #map {
 	left: 0;
 	width: 30%;
 	background: #fafafa;
+	overflow-y: scroll;
 }
 
 header {
