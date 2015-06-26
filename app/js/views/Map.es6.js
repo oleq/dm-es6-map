@@ -83,7 +83,7 @@ export default class extends View {
 	}
 
 	addMarker( placeId, placeDef ) {
-		var marker = new google.maps.Marker({
+		var marker = new google.maps.Marker( {
 			position: placeDef.latLng,
 			map: this.ui.map,
 			title: placeDef.name,

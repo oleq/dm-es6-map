@@ -2,45 +2,42 @@
 
 export default class {
 	constructor() {
-		this.callbacks = {};
+		this.callbacks = new Map();
 	}
 
-	on( eventName, callback, context ) {
-		callback = callback.bind( context || this );
+	on( eventName, callback, context = this ) {
+		callback = callback.bind( context );
 
-		if ( this.callbacks[ eventName ] ) {
-			this.callbacks[ eventName ].push( callback );
+		if ( this.callbacks.has( eventName ) ) {
+			this.callbacks.get( eventName ).add( callback );
 		} else {
-			this.callbacks[ eventName ] = [ callback ];
+			this.callbacks.set( eventName, new Set( [ callback ] ) );
 		}
 
-		// console.log( '[Emitter: on]', eventName, this );
+		// console.log( '[Emitter: on]', eventName, this.callbacks.get( eventName ).size );
 	}
 
-	once( eventName, callback, context ) {
-		var oneTimeCallback = function( ...eventData ) {
-			callback.call( context || this, ...eventData );
+	once( eventName, callback, context = this ) {
+		var onceCallback = function( ...eventData ) {
+			callback.call( context, ...eventData );
 
-			this.callbacks[ eventName ].splice( this.callbacks[ eventName ].indexOf( callback ), 1 );
+			this.callbacks.get( eventName ).delete( onceCallback );
 		}.bind( this );
 
-		if ( this.callbacks[ eventName ] ) {
-			this.callbacks[ eventName ].push( oneTimeCallback );
+		if ( this.callbacks.has( eventName ) ) {
+			this.callbacks.get( eventName ).add( onceCallback );
 		} else {
-			this.callbacks[ eventName ] = [ oneTimeCallback ];
+			this.callbacks.set( eventName, new Set( [ onceCallback ] ) );
 		}
 
 		// console.log( '[Emitter: once]', eventName, this );
 	}
 
-
 	fire( eventName, ...eventData ) {
-		var callbacks = this.callbacks[ eventName ];
-
-		if ( !callbacks ) {
+		if ( !this.callbacks.has( eventName ) ) {
 			return;
 		}
 
-		callbacks.map( c => c.call( this, ...eventData ) );
+		this.callbacks.get( eventName ).forEach( c => c.call( this, ...eventData ) );
 	}
 };
