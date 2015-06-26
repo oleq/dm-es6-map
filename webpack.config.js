@@ -8,5 +8,5 @@ module.exports = {
 			{ test: /\.es6.js$/, exclude: /node_modules/, loader: 'babel-loader' }
 		]
 	},
-	devtool: '#devtool'
+	devtool: '#inline-source-map'
 };
