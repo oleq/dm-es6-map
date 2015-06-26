@@ -1,11 +1,11 @@
 'use strict';
 
-import { elementFromString, extend } from '../helpers/helpers.es6.js'
+import { elementFromString } from '../helpers/helpers.es6.js'
 import View from './View.es6.js';
 
 export default class extends View {
 	constructor( viewDef ) {
-		extend( this, viewDef );
+		Object.assign( this, viewDef );
 		super();
 
 		this.listItems = {};

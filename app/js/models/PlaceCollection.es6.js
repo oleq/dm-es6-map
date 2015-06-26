@@ -1,6 +1,5 @@
 'use strict'
 
-import { extend, nextNumber } from '../helpers/helpers.es6.js'
 import Emitter from '../helpers/Emitter.es6.js';
 import Storage from '../helpers/Storage.es6.js'
 import Place from './Place.es6.js';
@@ -81,7 +80,7 @@ export default class extends Emitter {
 	}
 
 	update( placeDef ) {
-		extend( this.get( placeDef.id ), placeDef );
+		Object.assign( this.get( placeDef.id ), placeDef );
 		this.syncStorage();
 	}
 

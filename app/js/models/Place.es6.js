@@ -36,6 +36,6 @@ export default class extends Model {
 			this.set( d, placeDef[ d ] );
 		}
 
-		this.id = nextNumber();
+		this.id = nextNumber.next().value;
 	}
 };

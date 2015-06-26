@@ -1,6 +1,6 @@
 'use strict';
 
-import { extend, elementFromString } from '../helpers/helpers.es6.js'
+import { elementFromString } from '../helpers/helpers.es6.js'
 import View from './View.es6.js';
 
 var formFieldsNames = [ 'id', 'name', 'desc', 'rating' ];
@@ -8,7 +8,7 @@ var formControlNames = [ 'save', 'remove' ];
 
 export default class extends View {
 	constructor( viewDef ) {
-		extend( this, viewDef );
+		Object.assign( this, viewDef );
 		super();
 
 		this.ui.markers = {};
