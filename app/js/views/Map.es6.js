@@ -51,7 +51,7 @@ export default class extends View {
 				<dt><label for="rating">Rating</label></dt>
 				<dd>
 					<select id="rating" value="">
-						${ [ 1, 2, 3, 4, 5 ].map( i => `<option value="${i}">${i}</option>` ).join( '' ) }
+						${ [ ...Array( 5 ) ].map( ( v, i ) => `<option value="${++i}">${i}</option>` ).join( '\n' ) }
 					</select> of 5
 				</dd>
 			</dl>
