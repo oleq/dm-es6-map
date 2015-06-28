@@ -63,7 +63,7 @@ export default class extends View {
 	getRatingStars( rating ) {
 		var stars = '';
 
-		for ( let i = rating; i--; ) {
+		while ( rating-- > 0 ) {
 			stars += '&#9733;'
 		}
 

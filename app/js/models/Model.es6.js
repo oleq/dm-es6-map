@@ -20,8 +20,8 @@ export default class extends Emitter {
 
 				if ( oldValue !== value ) {
 					this.modelKeys.set( name, value );
-					this.fire( 'change', name, `was: ${oldValue}, is: ${value}` );
-					this.fire( 'change:' + name, `was: ${oldValue}, is: ${value}` );
+					this.fire( 'change', name, value, oldValue );
+					this.fire( 'change:' + name, value, oldValue );
 				}
 			}
 		} );

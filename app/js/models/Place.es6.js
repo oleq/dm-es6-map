@@ -9,8 +9,9 @@ export default class extends Model {
 
 		console.log( '[Place: create]', placeDef );
 
-		this.on( 'change', function( ...eventData ) {
-			console.log( '[Place: model change]', ...eventData );
+		this.on( 'change', function( property, value, oldValue ) {
+			console.log( '[Place: model change]',
+				`${property}: [ ${oldValue} => ${value} ]` );
 		} );
 
 		for ( let d in placeDef ) {
