@@ -40,17 +40,17 @@ export default class extends View {
 			this.fire( 'show:place', placeId );
 		}.bind( this ) );
 
-		placeDef.on( 'change:name', function( value ) {
+		placeDef.on( 'change:name', ( value ) => {
 			listItem.querySelector( '.place-name' ).innerHTML = value;
 		} );
 
-		placeDef.on( 'change:desc', function( value ) {
+		placeDef.on( 'change:desc', ( value ) => {
 			listItem.querySelector( '.place-desc' ).innerHTML = value;
 		} );
 
-		placeDef.on( 'change:rating', function( value ) {
+		placeDef.on( 'change:rating', ( value ) => {
 			listItem.querySelector( '.place-rating' ).innerHTML = this.getRatingStars( value );
-		}, this );
+		} );
 
 		this.listItems[ placeId ] = listItem;
 		this.ui.list.appendChild( listItem );

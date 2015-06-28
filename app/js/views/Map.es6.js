@@ -26,7 +26,7 @@ export default class extends View {
 			zoom: 5
 		} );
 
-		google.maps.event.addListener( this.ui.map, 'click', function( event ) {
+		google.maps.event.addListener( this.ui.map, 'click', ( event ) => {
 			var placeDef = {
 				name: 'New place',
 				desc: '',
@@ -38,7 +38,7 @@ export default class extends View {
 			this.model.once( 'place:add', this.showInfoForm, this );
 
 			this.fire( 'place:create', placeDef );
-		}.bind( this ) );
+		} );
 
 		this.ui.infoForm = elementFromString( `<form>
 			<dl class="mapForm">
@@ -65,17 +65,17 @@ export default class extends View {
 		formFieldsNames.map( e => this.ui.infoFormFields[ e ] = this.ui.infoForm.elements.namedItem( e ) );
 		formControlNames.map( e => this.ui.infoFormControls[ e ] = this.ui.infoForm.elements.namedItem( e ) );
 
-		this.ui.infoFormControls.save.addEventListener( 'click', function() {
+		this.ui.infoFormControls.save.addEventListener( 'click', () => {
 			this.fire( 'place:save', this.serializeInfoForm() );
 			this.ui.infoWindow.close();
-		}.bind( this ) );
+		} );
 
-		this.ui.infoFormControls.remove.addEventListener( 'click', function() {
+		this.ui.infoFormControls.remove.addEventListener( 'click', () => {
 			var id = this.getInfoFormFieldValue( 'id' );
 
 			this.ui.infoWindow.close();
 			this.fire( 'place:remove', id );
-		}.bind( this ) );
+		} );
 
 		this.ui.infoWindow = new google.maps.InfoWindow( {
 			content: this.ui.infoForm,
@@ -90,7 +90,7 @@ export default class extends View {
 			draggable: true
 		} );
 
-		google.maps.event.addListener( marker, 'dragend', function( event ) {
+		google.maps.event.addListener( marker, 'dragend', ( event ) => {
 			this.fire( 'place:move', {
 				id: placeId,
 				lat: event.latLng.lat(),
@@ -98,7 +98,7 @@ export default class extends View {
 			} );
 
 			this.showInfoForm( placeId );
-		}.bind( this ) );
+		} );
 
 		this.ui.markers[ placeId ] = marker;
 
