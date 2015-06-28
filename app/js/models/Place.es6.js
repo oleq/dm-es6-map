@@ -9,25 +9,6 @@ export default class extends Model {
 
 		console.log( '[Place: create]', placeDef );
 
-		Object.defineProperty( this, 'latLng', {
-			get() {
-				return new google.maps.LatLng( this.lat, this.lng );
-			}
-		} );
-
-		Object.defineProperty( this, 'model', {
-			get() {
-				return {
-					id: this.id,
-					name: this.name,
-					desc: this.desc,
-					rating: this.rating,
-					lat: this.lat,
-					lng: this.lng
-				};
-			}
-		} );
-
 		this.on( 'change', function( ...eventData ) {
 			console.log( '[Place: model change]', ...eventData );
 		} );
@@ -37,5 +18,20 @@ export default class extends Model {
 		}
 
 		this.id = nextNumber.next().value;
+	}
+
+	get latLng() {
+		return new google.maps.LatLng( this.lat, this.lng );
+	}
+
+	get model() {
+		return {
+			id: this.id,
+			name: this.name,
+			desc: this.desc,
+			rating: this.rating,
+			lat: this.lat,
+			lng: this.lng
+		};
 	}
 };

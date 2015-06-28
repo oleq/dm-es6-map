@@ -10,12 +10,10 @@ export default class extends Emitter {
 
 		this.places = new Map();
 		this.storage = new Storage();
+	}
 
-		Object.defineProperty( this, 'length', {
-			get() {
-				return this.places.size;
-			}
-		} );
+	get length() {
+		return this.places.size;
 	}
 
 	add( placeDef ) {
