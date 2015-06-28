@@ -71,7 +71,9 @@ export default class extends Emitter {
 	}
 
 	removeAll() {
-		this.forEach( ( v, k ) => this.remove( k ) );
+		for ( let [ id ] of this ) {
+			this.remove( id );
+		}
 	}
 
 	get( placeId ) {
@@ -88,8 +90,10 @@ export default class extends Emitter {
 		return this.places;
 	}
 
-	forEach( callback ) {
-		this.places.forEach( callback );
+	*[Symbol.iterator]() {
+		for ( let [ k, v ] of this.places ) {
+			yield [ k, v ];
+		}
 	}
 
 	loadStorage() {
@@ -103,7 +107,9 @@ export default class extends Emitter {
 	syncStorage() {
 		var serialized = [];
 
-		this.forEach( ( place, key ) => serialized.push( place.model ) );
+		for ( let [ , place ] of this ) {
+			serialized.push( place.model )
+		}
 
 		this.storage.set( 'places', serialized );
 	}

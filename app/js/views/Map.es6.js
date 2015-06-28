@@ -160,9 +160,9 @@ export default class extends View {
 	panToAllMarkers() {
 		var bounds = new google.maps.LatLngBounds();
 
-		this.model.forEach( function( place ) {
+		for ( let [ , place ] of this.model ) {
 			bounds.extend( place.latLng );
-		} );
+		}
 
 		this.ui.infoWindow.close();
 		this.ui.map.fitBounds( bounds );
